@@ -1,11 +1,9 @@
 package jp.gr.java_conf.androtaku.killingtime;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -16,61 +14,91 @@ import android.view.SurfaceView;
 public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callback,Runnable {
 
     SurfaceHolder holder = null;
-    private boolean isActive;
-    private Thread thread;
-    private long t1,t2;
-    private Bitmap hima;
+    private Thread thread = null;
     private int dispWidth,dispHeight;
 
-    float size = 1.0f;
-    boolean touched = false;
+    private static final int START = 0;
+    private static final int PLAYING = 1;
+    private static final int RESULT = 2;
+    private int viewMode = START;
+
+    private int himaCounter;
+    private int isogasiCounter;
+    private int score;
+
+    Context context;
+
+    DrawKanji drawKanji;
+    DrawStart drawStart;
+    DrawPlayingScore drawPlayingScore;
+    DrawResult drawResult;
+
+    MediaPlayer bgm;
 
     public KillingTimeView(Context context){
         super(context);
         getHolder().addCallback(this);
-        hima = BitmapFactory.decodeResource(getResources(),R.drawable.killingtime);
+        this.context = context;
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder){
         this.holder = holder;
-        isActive = true;
-        thread = new Thread(this);
-        thread.start();
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder,int format,int width,int height){
+        drawStart = new DrawStart(context,width,height);
         dispWidth = width;
         dispHeight = height;
+
+        if(thread == null) {
+            thread = new Thread(this);
+            thread.start();
+        }
+
+        bgm = MediaPlayer.create(getContext(),R.raw.bgm);
+        bgm.setLooping(true);
+        bgm.start();
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder){
-        isActive = false;
         thread = null;
+        bgm.stop();
     }
 
     @Override
     public void run(){
-        while(isActive){
-            t1 = System.currentTimeMillis();
-
-            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setColor(Color.BLUE);
-            paint.setStyle(Paint.Style.FILL);
+        while(thread != null){
+            long t1 = System.currentTimeMillis();
 
             Canvas canvas = holder.lockCanvas();
             canvas.drawColor(Color.WHITE);
-            canvas.save();
-            canvas.scale(size,size,dispWidth/2 - 150,dispHeight/2 - 150);
-            canvas.drawBitmap(hima, dispWidth / 2 - 150, dispHeight / 2 - 150, null);
-            canvas.restore();
-            if (touched && size > 0){
-                size -= 0.1;
+            switch (viewMode){
+                case START:
+                    drawKanji = new DrawKanji(context,dispWidth,dispHeight);
+                    drawPlayingScore = new DrawPlayingScore(dispWidth,dispHeight);
+                    drawResult = new DrawResult(context,dispWidth,dispHeight);
+                    drawStart.drawStart(canvas);
+                    break;
+
+                case PLAYING:
+                    drawKanji.kanjiAnimation();
+                    drawKanji.drawKanji(canvas);
+                    drawPlayingScore.drawPlayingScore(canvas,score);
+                    break;
+
+                case RESULT:
+                    drawResult.drawResult(canvas,score);
+                    break;
+
+                default:
+                    break;
             }
             holder.unlockCanvasAndPost(canvas);
-            t2 = System.currentTimeMillis();
+
+            long t2 = System.currentTimeMillis();
             if(t2 - t1 < 16){
                 try{
                     Thread.sleep(16-(t2-t1));
@@ -85,11 +113,47 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     public boolean onTouchEvent(MotionEvent event){
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                touched = true;
+                switch (viewMode){
+                    case START:
+                        himaCounter = 0;
+                        isogasiCounter = 0;
+                        score = 0;
+                        viewMode = PLAYING;
+                        break;
+
+                    case PLAYING:
+                        int judge = drawKanji.touchKanji();
+                        if(judge == drawKanji.HIMA){
+                            himaCounter++;
+                            score += 10*drawKanji.getSpeed();
+                            if(himaCounter%10 == 0) {
+                                drawKanji.accelarateSpeed();
+                            }
+                        }
+                        else if(judge == drawKanji.ISOGASI){
+                            isogasiCounter++;
+                            if(isogasiCounter > 3){
+                                viewMode = RESULT;
+                            }
+                        }
+                        break;
+
+                    case RESULT:
+
+                        break;
+
+                    default:
+                        break;
+                }
+
                 break;
 
             default:
         }
         return  true;
+    }
+
+    public void stopThread(){
+        thread = null;
     }
 }
