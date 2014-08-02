@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 
 import java.util.Random;
@@ -11,14 +13,13 @@ import java.util.Random;
 /**
  * Created by takuma on 2014/08/01.
  */
-public class DrawKanji {
+public class DrawPlaying {
     private Bitmap hima,isogasi,hima_clicked,isogasi_clicked;
 
-    public static final int HIMA = 0;
-    public static final int ISOGASI = 1;
-    public static final int HIMA_CLICKED = 2;
-    public final static int ISOGASI_CLICKED = 3;
-    public final static int NOTHING = 4;
+    public final int HIMA = 0;
+    public final int ISOGASI = 1;
+    public final int HIMA_CLICKED = 2;
+    public final int ISOGASI_CLICKED = 3;
     private int showType = HIMA;
     private int kanijiAnimCounter = 0;
     private static final int OCCUR = 2;
@@ -30,7 +31,11 @@ public class DrawKanji {
 
     private boolean touched = false;
 
-    public DrawKanji(Context context,int dispWidth,int dispHeight){
+    private int himaCounter = 0;
+    private int life = 3;
+    private int score = 0;
+
+    public DrawPlaying(Context context, int dispWidth, int dispHeight){
         hima = BitmapFactory.decodeResource(context.getResources(), R.drawable.killingtime);
         isogasi = BitmapFactory.decodeResource(context.getResources(),R.drawable.busy);
         hima_clicked = BitmapFactory.decodeResource(context.getResources(),R.drawable.killingtime_clicked);
@@ -39,7 +44,7 @@ public class DrawKanji {
         this.dispHeight = dispHeight;
     }
 
-    public void drawKanji(Canvas canvas){
+    public void drawPlaying(Canvas canvas){
         canvas.save();
         Rect dst = new Rect((dispWidth/2) - (int)(dispWidth*0.2f),(dispHeight/2) - (int)(dispWidth*0.2f),
                 (dispWidth/2) + (int)(dispWidth*0.2f),(dispHeight/2) + (int)(dispWidth*0.2f));
@@ -62,6 +67,20 @@ public class DrawKanji {
             canvas.drawBitmap(isogasi_clicked,src,dst,null);
         }
         canvas.restore();
+
+        Paint scorePaint = new Paint();
+        scorePaint.setTextSize(dispWidth*0.1f);
+        scorePaint.setAntiAlias(true);
+        scorePaint.setColor(Color.BLACK);
+        canvas.drawText("SCORE:" + String.valueOf(score),0,
+                scorePaint.getFontMetrics().bottom - scorePaint.getFontMetrics().top,scorePaint);
+
+        Paint lifePaint = new Paint();
+        lifePaint.setTextSize(dispWidth*0.1f);
+        lifePaint.setAntiAlias(true);
+        lifePaint.setColor(Color.BLACK);
+        canvas.drawText(String.valueOf(life),dispWidth - lifePaint.measureText(String.valueOf(life)),
+                lifePaint.getFontMetrics().bottom - lifePaint.getFontMetrics().top,lifePaint);
     }
 
     public void kanjiAnimation(){
@@ -80,7 +99,7 @@ public class DrawKanji {
                 else if(kanijiAnimCounter > 30/kanjiAnimSpeed){
                     size = 1.0f;
                     kanijiAnimCounter = 0;
-                    this.kanjiAnimType = DISMISS;
+                    kanjiAnimType = DISMISS;
                 }
                 break;
 
@@ -94,6 +113,9 @@ public class DrawKanji {
                 else if(kanijiAnimCounter > 20/kanjiAnimSpeed){
                     size = 0;
                     kanijiAnimCounter = 0;
+                    if(showType == HIMA){
+                        life--;
+                    }
                     touched = false;
                     Random rdm = new Random();
                     int random = rdm.nextInt(10);
@@ -104,33 +126,50 @@ public class DrawKanji {
                         showType = ISOGASI;
                     }
 
-                    this.kanjiAnimType = OCCUR;
+                    kanjiAnimType = OCCUR;
                 }
                 break;
         }
         kanijiAnimCounter++;
     }
 
-    public int touchKanji(){
+    public void touchKanji(){
         if(showType == HIMA && !touched){
             showType = HIMA_CLICKED;
             touched = true;
-            return HIMA;
-
+            himaCounter++;
+            score += 10*kanjiAnimSpeed;
+            if(himaCounter%10 == 0) {
+                kanjiAnimSpeed += 0.1f;
+            }
         }
         else if(showType == ISOGASI && !touched){
             showType = ISOGASI_CLICKED;
             touched = true;
-            return ISOGASI;
+            life--;
         }
-        return NOTHING;
     }
 
-    public void accelarateSpeed(){
-        kanjiAnimSpeed += 0.1f;
+    public int getScore(){
+        return score;
     }
 
-    public float getSpeed(){
-        return kanjiAnimSpeed;
+    public boolean isGameOver(){
+        if(life == 0){
+            return true;
+        }
+
+        return false;
+    }
+
+    public void init(){
+        kanjiAnimSpeed = 1.0f;
+        himaCounter = 0;
+        life = 3;
+        touched = false;
+        score = 0;
+        kanijiAnimCounter = 0;
+        size = 0;
+        showType = HIMA;
     }
 }

@@ -22,16 +22,12 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     private static final int RESULT = 2;
     private int viewMode = START;
 
-    private int himaCounter;
-    private int isogasiCounter;
-    private int score;
-
     Context context;
 
-    DrawKanji drawKanji;
+    DrawPlaying drawPlaying;
     DrawStart drawStart;
-    DrawPlayingScore drawPlayingScore;
     DrawResult drawResult;
+    DrawPrepare drawPrepare;
 
     MediaPlayer bgm;
 
@@ -77,20 +73,27 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
             canvas.drawColor(Color.WHITE);
             switch (viewMode){
                 case START:
-                    drawKanji = new DrawKanji(context,dispWidth,dispHeight);
-                    drawPlayingScore = new DrawPlayingScore(dispWidth,dispHeight);
+                    drawPlaying = new DrawPlaying(context,dispWidth,dispHeight);
                     drawResult = new DrawResult(context,dispWidth,dispHeight);
+                    drawPrepare = new DrawPrepare(dispWidth,dispHeight);
                     drawStart.drawStart(canvas);
                     break;
 
                 case PLAYING:
-                    drawKanji.kanjiAnimation();
-                    drawKanji.drawKanji(canvas);
-                    drawPlayingScore.drawPlayingScore(canvas,score);
+                    if(!drawPrepare.isEnded()){
+                        drawPrepare.drawPrepare(canvas);
+                    }
+                    else {
+                        drawPlaying.kanjiAnimation();
+                        drawPlaying.drawPlaying(canvas);
+                        if (drawPlaying.isGameOver()) {
+                            viewMode = RESULT;
+                        }
+                    }
                     break;
 
                 case RESULT:
-                    drawResult.drawResult(canvas,score);
+                    drawResult.drawResult(canvas,drawPlaying.getScore());
                     break;
 
                 default:
@@ -115,31 +118,19 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
             case MotionEvent.ACTION_DOWN:
                 switch (viewMode){
                     case START:
-                        himaCounter = 0;
-                        isogasiCounter = 0;
-                        score = 0;
                         viewMode = PLAYING;
                         break;
 
                     case PLAYING:
-                        int judge = drawKanji.touchKanji();
-                        if(judge == drawKanji.HIMA){
-                            himaCounter++;
-                            score += 10*drawKanji.getSpeed();
-                            if(himaCounter%10 == 0) {
-                                drawKanji.accelarateSpeed();
-                            }
-                        }
-                        else if(judge == drawKanji.ISOGASI){
-                            isogasiCounter++;
-                            if(isogasiCounter > 3){
-                                viewMode = RESULT;
-                            }
+                        if(drawPrepare.isEnded()) {
+                            drawPlaying.touchKanji();
                         }
                         break;
 
                     case RESULT:
-
+                        drawPlaying.init();
+                        drawPrepare.init();
+                        viewMode = PLAYING;
                         break;
 
                     default:

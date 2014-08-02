@@ -31,7 +31,7 @@ public class DrawStart {
         touchPaint.setAntiAlias(true);
         touchPaint.setTextSize(dispWidth*0.05f);
         canvas.drawText("タッチしてスタート",(dispWidth/2) - (touchPaint.measureText("タッチしてスタート")/2),
-                (dispHeight/2) - ((touchPaint.getFontMetrics().bottom - touchPaint.getFontMetrics().top)/2),
+                (dispHeight/2) - (touchPaint.getFontMetrics().bottom - touchPaint.getFontMetrics().top),
                 touchPaint);
     }
 
