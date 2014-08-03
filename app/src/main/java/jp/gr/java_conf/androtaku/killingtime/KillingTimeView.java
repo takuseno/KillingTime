@@ -1,12 +1,21 @@
 package jp.gr.java_conf.androtaku.killingtime;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+
+import java.util.Random;
 
 /**
  * Created by takuma on 2014/07/30.
@@ -28,13 +37,13 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     DrawStart drawStart;
     DrawResult drawResult;
     DrawPrepare drawPrepare;
-
-    MediaPlayer bgm;
+    InterstitialAd interstitial;
 
     public KillingTimeView(Context context){
         super(context);
         getHolder().addCallback(this);
         this.context = context;
+
     }
 
     @Override
@@ -52,20 +61,16 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
             thread = new Thread(this);
             thread.start();
         }
-
-        bgm = MediaPlayer.create(getContext(),R.raw.bgm);
-        bgm.setLooping(true);
-        bgm.start();
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder){
         thread = null;
-        bgm.stop();
     }
 
     @Override
     public void run(){
+        Looper.prepare();
         while(thread != null){
             long t1 = System.currentTimeMillis();
 
@@ -73,9 +78,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
             canvas.drawColor(Color.WHITE);
             switch (viewMode){
                 case START:
-                    drawPlaying = new DrawPlaying(context,dispWidth,dispHeight);
-                    drawResult = new DrawResult(context,dispWidth,dispHeight);
-                    drawPrepare = new DrawPrepare(dispWidth,dispHeight);
+
                     drawStart.drawStart(canvas);
                     break;
 
@@ -87,13 +90,36 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                         drawPlaying.kanjiAnimation();
                         drawPlaying.drawPlaying(canvas);
                         if (drawPlaying.isGameOver()) {
+                            drawResult = new DrawResult(context,dispWidth,dispHeight,drawPlaying.getScore());
                             viewMode = RESULT;
+                            Handler handler = new Handler();
+                            Random rdm = new Random();
+                            //if(rdm.nextInt(5) == 1){
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        interstitial = new InterstitialAd(context);
+                                        interstitial.setAdUnitId("ca-app-pub-2444235792602347/7135917918");
+                                        AdRequest adRequest = new AdRequest.Builder()
+                                                .addTestDevice("CEDA3A470BE0172E6E4DB4E139205B82")
+                                                .build();
+                                        interstitial.loadAd(adRequest);
+                                        interstitial.setAdListener(new AdListener() {
+                                            @Override
+                                            public void onAdLoaded() {
+                                                super.onAdLoaded();
+                                                interstitial.show();
+                                            }
+                                        });
+                                    }
+                                });
+                            //}
                         }
                     }
                     break;
 
                 case RESULT:
-                    drawResult.drawResult(canvas,drawPlaying.getScore());
+                    drawResult.drawResult(canvas);
                     break;
 
                 default:
@@ -118,6 +144,8 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
             case MotionEvent.ACTION_DOWN:
                 switch (viewMode){
                     case START:
+                        drawPlaying = new DrawPlaying(context,dispWidth,dispHeight);
+                        drawPrepare = new DrawPrepare(dispWidth,dispHeight);
                         viewMode = PLAYING;
                         break;
 
@@ -128,15 +156,50 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                         break;
 
                     case RESULT:
-                        drawPlaying.init();
-                        drawPrepare.init();
-                        viewMode = PLAYING;
+                        if(drawResult.isBack(event.getX(),event.getY())){
+                            drawResult.clickType = drawResult.BACK_CLICKED;
+                        }
+                        else if(drawResult.isRetry(event.getX(),event.getY())){
+                            drawResult.clickType = drawResult.RETRY_CLICKED;
+                        }
                         break;
 
                     default:
-                        break;
                 }
+                break;
 
+            case MotionEvent.ACTION_UP:
+                switch (viewMode){
+                    case RESULT:
+                        if(drawResult.isBack(event.getX(),event.getY())){
+                            drawStart = new DrawStart(context,dispWidth,dispHeight);
+                            viewMode = START;
+                        }
+                        else if(drawResult.isRetry(event.getX(),event.getY())){
+                            drawPlaying.init();
+                            drawPrepare.init();
+                            viewMode = PLAYING;
+                        }
+                        else{
+                            drawResult.clickType = drawResult.NONE_CLICKED;
+                        }
+                        break;
+
+                    default:
+                }
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                switch (viewMode){
+                    case RESULT:
+                        if(!drawResult.isBack(event.getX(),event.getY())
+                                && !drawResult.isRetry(event.getX(),event.getY())){
+                            drawResult.clickType = drawResult.NONE_CLICKED;
+                        }
+                        break;
+
+                    default:
+                }
                 break;
 
             default:

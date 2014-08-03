@@ -72,14 +72,14 @@ public class DrawPlaying {
         scorePaint.setTextSize(dispWidth*0.1f);
         scorePaint.setAntiAlias(true);
         scorePaint.setColor(Color.BLACK);
-        canvas.drawText("SCORE:" + String.valueOf(score),0,
+        canvas.drawText("得点:" + String.valueOf(score),0,
                 scorePaint.getFontMetrics().bottom - scorePaint.getFontMetrics().top,scorePaint);
 
         Paint lifePaint = new Paint();
         lifePaint.setTextSize(dispWidth*0.1f);
         lifePaint.setAntiAlias(true);
         lifePaint.setColor(Color.BLACK);
-        canvas.drawText(String.valueOf(life),dispWidth - lifePaint.measureText(String.valueOf(life)),
+        canvas.drawText(String.valueOf("命:" + life),dispWidth - lifePaint.measureText(String.valueOf("命:" + life)),
                 lifePaint.getFontMetrics().bottom - lifePaint.getFontMetrics().top,lifePaint);
     }
 
@@ -88,7 +88,6 @@ public class DrawPlaying {
             case OCCUR:
                 if(kanijiAnimCounter == 0){
                     size = 0;
-
                 }
                 else if(kanijiAnimCounter < 20/kanjiAnimSpeed){
                     size += 1.2/(20/kanjiAnimSpeed);
@@ -171,5 +170,6 @@ public class DrawPlaying {
         kanijiAnimCounter = 0;
         size = 0;
         showType = HIMA;
+        kanjiAnimType = OCCUR;
     }
 }
