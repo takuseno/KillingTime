@@ -14,7 +14,6 @@ import java.util.Random;
  * Created by takuma on 2014/08/01.
  */
 public class DrawPlaying {
-    private Bitmap hima,isogasi,hima_clicked,isogasi_clicked;
 
     public final int HIMA = 0;
     public final int ISOGASI = 1;
@@ -35,36 +34,66 @@ public class DrawPlaying {
     private int life = 3;
     private int score = 0;
 
+    private Paint greenPaint,redPaint,strokePaint,wordPaint;
+
     public DrawPlaying(Context context, int dispWidth, int dispHeight){
-        hima = BitmapFactory.decodeResource(context.getResources(), R.drawable.killingtime);
-        isogasi = BitmapFactory.decodeResource(context.getResources(),R.drawable.busy);
-        hima_clicked = BitmapFactory.decodeResource(context.getResources(),R.drawable.killingtime_clicked);
-        isogasi_clicked = BitmapFactory.decodeResource(context.getResources(),R.drawable.busy_clicked);
         this.dispWidth = dispWidth;
         this.dispHeight = dispHeight;
+
+        greenPaint = new Paint();
+        greenPaint.setColor(Color.GREEN);
+        greenPaint.setAntiAlias(true);
+        greenPaint.setStyle(Paint.Style.FILL);
+        greenPaint.setStrokeWidth(dispWidth*0.01f);
+
+        redPaint = new Paint();
+        redPaint.setColor(Color.RED);
+        redPaint.setAntiAlias(true);
+        redPaint.setStyle(Paint.Style.FILL);
+        redPaint.setStrokeWidth(dispWidth*0.01f);
+
+        strokePaint = new Paint();
+        strokePaint.setColor(Color.BLACK);
+        strokePaint.setAntiAlias(true);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setStrokeWidth(dispWidth*0.01f);
+
+        wordPaint = new Paint();
+        wordPaint.setColor(Color.BLACK);
+        wordPaint.setAntiAlias(true);
+        wordPaint.setTextSize(dispWidth*0.3f);
     }
 
     public void drawPlaying(Canvas canvas){
         canvas.save();
-        Rect dst = new Rect((dispWidth/2) - (int)(dispWidth*0.2f),(dispHeight/2) - (int)(dispWidth*0.2f),
-                (dispWidth/2) + (int)(dispWidth*0.2f),(dispHeight/2) + (int)(dispWidth*0.2f));
 
         canvas.scale(size,size,dispWidth/2,dispHeight/2);
         if(showType == HIMA) {
-            Rect src = new Rect(0,0,hima.getWidth(),hima.getHeight());
-            canvas.drawBitmap(hima, src, dst, null);
+            canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, strokePaint);
+            canvas.drawText("暇",(dispWidth/2) - (wordPaint.measureText("暇")/2),
+                    (dispHeight/2) - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2),
+                    wordPaint);
         }
         else if(showType == ISOGASI){
-            Rect src = new Rect(0,0,isogasi.getWidth(),isogasi.getHeight());
-            canvas.drawBitmap(isogasi,src,dst,null);
+            canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, strokePaint);
+            canvas.drawText("忙",(dispWidth/2) - (wordPaint.measureText("忙")/2),
+                    (dispHeight/2) - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2),
+                    wordPaint);
         }
         else if(showType == HIMA_CLICKED){
-            Rect src = new Rect(0,0,hima_clicked.getWidth(),hima_clicked.getHeight());
-            canvas.drawBitmap(hima_clicked,src,dst,null);
+
+            canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f,greenPaint);
+            canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, strokePaint);
+            canvas.drawText("暇",(dispWidth/2) - (wordPaint.measureText("暇")/2),
+                    (dispHeight/2) - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2),
+                    wordPaint);
         }
         else if(showType == ISOGASI_CLICKED){
-            Rect src = new Rect(0,0,isogasi_clicked.getWidth(),isogasi_clicked.getHeight());
-            canvas.drawBitmap(isogasi_clicked,src,dst,null);
+            canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, redPaint);
+            canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, strokePaint);
+            canvas.drawText("忙",(dispWidth/2) - (wordPaint.measureText("忙")/2),
+                    (dispHeight/2) - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2),
+                    wordPaint);
         }
         canvas.restore();
 

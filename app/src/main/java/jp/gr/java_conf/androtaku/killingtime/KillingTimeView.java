@@ -1,5 +1,6 @@
 package jp.gr.java_conf.androtaku.killingtime;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
@@ -38,12 +39,21 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     DrawResult drawResult;
     DrawPrepare drawPrepare;
     InterstitialAd interstitial;
+    AdRequest adRequest;
+
+    Activity activity;
 
     public KillingTimeView(Context context){
         super(context);
         getHolder().addCallback(this);
         this.context = context;
-
+        interstitial = new InterstitialAd(context);
+        interstitial.setAdUnitId("ca-app-pub-2444235792602347/7135917918");
+        adRequest = new AdRequest.Builder()
+                .addTestDevice("CEDA3A470BE0172E6E4DB4E139205B82")
+                .addTestDevice("857A812B83EDE2C982622E53AD099F5B")
+                .build();
+        interstitial.loadAd(adRequest);
     }
 
     @Override
@@ -70,7 +80,6 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
 
     @Override
     public void run(){
-        Looper.prepare();
         while(thread != null){
             long t1 = System.currentTimeMillis();
 
@@ -92,28 +101,15 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                         if (drawPlaying.isGameOver()) {
                             drawResult = new DrawResult(context,dispWidth,dispHeight,drawPlaying.getScore());
                             viewMode = RESULT;
-                            Handler handler = new Handler();
                             Random rdm = new Random();
-                            //if(rdm.nextInt(5) == 1){
-                                handler.post(new Runnable() {
+                            if(rdm.nextInt(5) == 1){
+                                ((Activity)context).runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        interstitial = new InterstitialAd(context);
-                                        interstitial.setAdUnitId("ca-app-pub-2444235792602347/7135917918");
-                                        AdRequest adRequest = new AdRequest.Builder()
-                                                .addTestDevice("CEDA3A470BE0172E6E4DB4E139205B82")
-                                                .build();
-                                        interstitial.loadAd(adRequest);
-                                        interstitial.setAdListener(new AdListener() {
-                                            @Override
-                                            public void onAdLoaded() {
-                                                super.onAdLoaded();
-                                                interstitial.show();
-                                            }
-                                        });
+                                        interstitial.show();
                                     }
                                 });
-                            //}
+                            }
                         }
                     }
                     break;
@@ -158,9 +154,11 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                     case RESULT:
                         if(drawResult.isBack(event.getX(),event.getY())){
                             drawResult.clickType = drawResult.BACK_CLICKED;
+                            interstitial.loadAd(adRequest);
                         }
                         else if(drawResult.isRetry(event.getX(),event.getY())){
                             drawResult.clickType = drawResult.RETRY_CLICKED;
+                            interstitial.loadAd(adRequest);
                         }
                         break;
 
@@ -209,5 +207,12 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
 
     public void stopThread(){
         thread = null;
+    }
+
+    public void startThread(){
+        if(thread == null){
+            thread = new Thread(this);
+            thread.start();
+        }
     }
 }

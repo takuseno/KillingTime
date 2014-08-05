@@ -16,11 +16,12 @@ public class DrawResult {
 
     private int dispWidth,dispHeight;
     private int score;
-    Bitmap back,back_clicked,retry,retry_clicked;
     public final int NONE_CLICKED = 0;
     public final int BACK_CLICKED = 1;
     public final int RETRY_CLICKED = 2;
     public int clickType = NONE_CLICKED;
+
+    private Paint paint,strokePaint,wordPaint;
 
     public DrawResult(Context context,int dispWidth,int dispHeight,int score){
         this.dispWidth = dispWidth;
@@ -32,10 +33,23 @@ public class DrawResult {
             editor.putInt("best_score",score);
             editor.commit();
         }
-        back = BitmapFactory.decodeResource(context.getResources(),R.drawable.back);
-        back_clicked = BitmapFactory.decodeResource(context.getResources(),R.drawable.back_clicked);
-        retry = BitmapFactory.decodeResource(context.getResources(),R.drawable.retry);
-        retry_clicked = BitmapFactory.decodeResource(context.getResources(),R.drawable.retry_clicked);
+
+        wordPaint = new Paint();
+        wordPaint.setColor(Color.BLACK);
+        wordPaint.setAntiAlias(true);
+        wordPaint.setTextSize(dispWidth*0.15f);
+
+        paint = new Paint();
+        paint.setColor(Color.GREEN);
+        paint.setAntiAlias(true);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setStrokeWidth(dispWidth*0.01f);
+
+        strokePaint = new Paint();
+        strokePaint.setColor(Color.BLACK);
+        strokePaint.setAntiAlias(true);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setStrokeWidth(dispWidth*0.01f);
     }
 
     public void drawResult(Canvas canvas){
@@ -55,24 +69,32 @@ public class DrawResult {
                 (dispHeight/2) + ((scorePaint.getFontMetrics().bottom - scorePaint.getFontMetrics().top)/2),
                 scorePaint);
 
-        Rect src = new Rect(0,0,back.getWidth(),back.getHeight());
-
-        Rect backRect = new Rect((int)((dispWidth/4) - (dispWidth*0.1f)),(int)(dispHeight - (dispWidth*0.3f)),
-                (int)((dispWidth/4) + (dispWidth*0.1f)),(int)(dispHeight - (dispWidth*0.1f)));
         if(clickType == BACK_CLICKED){
-            canvas.drawBitmap(back_clicked, src, backRect, null);
+            canvas.drawCircle(dispWidth / 4, dispHeight - (dispWidth*0.2f), dispWidth * 0.1f, paint);
+            canvas.drawCircle(dispWidth / 4, dispHeight - (dispWidth*0.2f), dispWidth * 0.1f, strokePaint);
+            canvas.drawText("戻",(dispWidth/4) - (wordPaint.measureText("戻")/2),
+                    dispHeight - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2) - (dispWidth*0.2f),
+                    wordPaint);
         }
         else {
-            canvas.drawBitmap(back, src, backRect, null);
+            canvas.drawCircle(dispWidth / 4, dispHeight - (dispWidth*0.2f), dispWidth * 0.1f, strokePaint);
+            canvas.drawText("戻",(dispWidth/4) - (wordPaint.measureText("戻")/2),
+                    dispHeight - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2) - (dispWidth*0.2f),
+                    wordPaint);
         }
 
-        Rect retryRect = new Rect((int)((3*dispWidth/4) - (dispWidth*0.1f)),(int)(dispHeight - (dispWidth*0.3f)),
-                (int)((3*dispWidth/4) + (dispWidth*0.1f)),(int)(dispHeight - (dispWidth*0.1f)));
         if(clickType == RETRY_CLICKED){
-            canvas.drawBitmap(retry_clicked, src, retryRect, null);
+            canvas.drawCircle(3*dispWidth / 4, dispHeight - (dispWidth*0.2f), dispWidth * 0.1f, paint);
+            canvas.drawCircle(3*dispWidth / 4, dispHeight - (dispWidth*0.2f), dispWidth * 0.1f, strokePaint);
+            canvas.drawText("再",(3 * dispWidth / 4) - (wordPaint.measureText("再")/2),
+                    dispHeight - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2) - (dispWidth*0.2f),
+                    wordPaint);
         }
         else {
-            canvas.drawBitmap(retry, src, retryRect, null);
+            canvas.drawCircle(3*dispWidth / 4, dispHeight - (dispWidth*0.2f), dispWidth * 0.1f, strokePaint);
+            canvas.drawText("再",(3 * dispWidth / 4) - (wordPaint.measureText("再")/2),
+                    dispHeight - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2) - (dispWidth*0.2f),
+                    wordPaint);
         }
     }
 
