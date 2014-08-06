@@ -2,6 +2,7 @@ package jp.gr.java_conf.androtaku.killingtime;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ public class MainActivity extends Activity {
     boolean initialized = false;
 
     SharedPreferences prefs = null;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,16 @@ public class MainActivity extends Activity {
         adView.loadAd(adRequest);
     }
 
+    public void showGuide(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setPositiveButton("OK",null)
+                .setTitle("遊び方")
+                .setMessage("”暇”と”忙”がランダムに飛び出てきます。”忙”を押すか、”暇”を押しそこねるとミスになります。ミスを3回するとゲームオーバーです。さあ暇を潰しましょう！");
+        builder.create().show();
+        editor.putBoolean("guide",false);
+        editor.commit();
+    }
+
     @Override
     public void onPause(){
         super.onPause();
@@ -62,6 +74,10 @@ public class MainActivity extends Activity {
         super.onResume();
         if(prefs == null){
             prefs = getSharedPreferences("preferences",MODE_PRIVATE);
+            editor = prefs.edit();
+            if(prefs.getBoolean("guide",true)){
+                showGuide();
+            }
         }
         if(prefs.getBoolean("music",true)) {
             killingTimeView.startMusic();
