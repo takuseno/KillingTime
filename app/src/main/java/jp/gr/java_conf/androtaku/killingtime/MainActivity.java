@@ -4,19 +4,13 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.InterstitialAd;
 
-import java.io.IOException;
-
+import com.google.analytics.tracking.android.EasyTracker;
 
 public class MainActivity extends Activity {
 
@@ -63,6 +57,7 @@ public class MainActivity extends Activity {
     @Override
     public void onPause(){
         super.onPause();
+        EasyTracker.getInstance(this).activityStop(this);
         killingTimeView.stopThread();
         killingTimeView.stopMusic();
         initialized = true;
@@ -72,6 +67,7 @@ public class MainActivity extends Activity {
     @Override
     public void onResume(){
         super.onResume();
+        EasyTracker.getInstance(this).activityStart(this);
         if(prefs == null){
             prefs = getSharedPreferences("preferences",MODE_PRIVATE);
             editor = prefs.edit();
