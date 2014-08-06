@@ -16,6 +16,7 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -31,6 +32,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     private static final int PLAYING = 1;
     private static final int RESULT = 2;
     private int viewMode = START;
+    MediaPlayer bgm;
 
     Context context;
 
@@ -41,7 +43,8 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     InterstitialAd interstitial;
     AdRequest adRequest;
 
-    Activity activity;
+    SharedPreferences prefs;
+    SharedPreferences.Editor editor;
 
     public KillingTimeView(Context context){
         super(context);
@@ -54,6 +57,13 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                 .addTestDevice("857A812B83EDE2C982622E53AD099F5B")
                 .build();
         interstitial.loadAd(adRequest);
+
+        bgm = MediaPlayer.create(context, R.raw.bgm);
+        bgm.setLooping(true);
+
+        prefs = context.getSharedPreferences("preferences",Context.MODE_PRIVATE);
+        editor = prefs.edit();
+
     }
 
     @Override
@@ -140,14 +150,32 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
             case MotionEvent.ACTION_DOWN:
                 switch (viewMode){
                     case START:
-                        drawPlaying = new DrawPlaying(context,dispWidth,dispHeight);
-                        drawPrepare = new DrawPrepare(dispWidth,dispHeight);
-                        viewMode = PLAYING;
+                        if(drawStart.touchMusic(event.getX(),event.getY())){
+                            if(prefs.getBoolean("music",true)){
+                                stopMusic();
+                                editor.putBoolean("music",false);
+                                editor.commit();
+                            }
+                            else{
+                                startMusic();
+                                editor.putBoolean("music",true);
+                                editor.commit();
+                            }
+                        }
+                        else {
+                            drawPlaying = new DrawPlaying(context, dispWidth, dispHeight);
+                            drawPrepare = new DrawPrepare(dispWidth, dispHeight);
+                            viewMode = PLAYING;
+                        }
                         break;
 
                     case PLAYING:
                         if(drawPrepare.isEnded()) {
-                            drawPlaying.touchKanji();
+                            if(event.getX() < dispWidth/2 + (dispWidth*0.3f) && event.getX() > dispWidth/2 - (dispWidth*0.3f)){
+                                if(event.getY() < dispHeight/2 + (dispWidth*0.3f) && event.getY() > dispHeight/2 - (dispWidth*0.3f)){
+                                    drawPlaying.touchKanji();
+                                }
+                            }
                         }
                         break;
 
@@ -214,5 +242,18 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
             thread = new Thread(this);
             thread.start();
         }
+    }
+
+    public void stopMusic(){
+        bgm.stop();
+        try{
+            bgm.prepare();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void startMusic(){
+        bgm.start();
     }
 }

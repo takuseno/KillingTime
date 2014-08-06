@@ -20,6 +20,8 @@ public class DrawPlaying {
     public final int HIMA_CLICKED = 2;
     public final int ISOGASI_CLICKED = 3;
     private int showType = HIMA;
+    private String[] wrongKanji = {"忙"};
+    private int wrongType = 0;
     private int kanijiAnimCounter = 0;
     private static final int OCCUR = 2;
     private static final int DISMISS = 1;
@@ -76,7 +78,7 @@ public class DrawPlaying {
         }
         else if(showType == ISOGASI){
             canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, strokePaint);
-            canvas.drawText("忙",(dispWidth/2) - (wordPaint.measureText("忙")/2),
+            canvas.drawText(wrongKanji[wrongType],(dispWidth/2) - (wordPaint.measureText(wrongKanji[wrongType])/2),
                     (dispHeight/2) - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2),
                     wordPaint);
         }
@@ -91,7 +93,7 @@ public class DrawPlaying {
         else if(showType == ISOGASI_CLICKED){
             canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, redPaint);
             canvas.drawCircle(dispWidth / 2, dispHeight / 2, dispWidth * 0.2f, strokePaint);
-            canvas.drawText("忙",(dispWidth/2) - (wordPaint.measureText("忙")/2),
+            canvas.drawText(wrongKanji[wrongType],(dispWidth/2) - (wordPaint.measureText(wrongKanji[wrongType])/2),
                     (dispHeight/2) - ((wordPaint.getFontMetrics().bottom + wordPaint.getFontMetrics().top)/2),
                     wordPaint);
         }
@@ -152,6 +154,8 @@ public class DrawPlaying {
                     }
                     else{
                         showType = ISOGASI;
+                        random = rdm.nextInt(wrongKanji.length);
+                        wrongType = random;
                     }
 
                     kanjiAnimType = OCCUR;

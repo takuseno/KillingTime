@@ -20,7 +20,7 @@ public class DrawResult {
     public final int BACK_CLICKED = 1;
     public final int RETRY_CLICKED = 2;
     public int clickType = NONE_CLICKED;
-
+    private boolean isBestScore = false;
     private Paint paint,strokePaint,wordPaint;
 
     public DrawResult(Context context,int dispWidth,int dispHeight,int score){
@@ -32,6 +32,7 @@ public class DrawResult {
         if(score > prefs.getInt("best_score",0)){
             editor.putInt("best_score",score);
             editor.commit();
+            isBestScore = true;
         }
 
         wordPaint = new Paint();
@@ -68,6 +69,13 @@ public class DrawResult {
         canvas.drawText(String.valueOf(score) + "点",(dispWidth/2) - (scorePaint.measureText(String.valueOf(score) + "点")/2),
                 (dispHeight/2) + ((scorePaint.getFontMetrics().bottom - scorePaint.getFontMetrics().top)/2),
                 scorePaint);
+
+        if(isBestScore){
+            scorePaint.setTextSize(dispWidth*0.1f);
+            canvas.drawText("新記録！！",(dispWidth/2) - (scorePaint.measureText("新記録！！")/2),
+                    (dispHeight/2) + ((scorePaint.getFontMetrics().bottom - scorePaint.getFontMetrics().top)*2),
+                    scorePaint);
+        }
 
         if(clickType == BACK_CLICKED){
             canvas.drawCircle(dispWidth / 4, dispHeight - (dispWidth*0.2f), dispWidth * 0.1f, paint);

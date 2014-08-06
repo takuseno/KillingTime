@@ -13,11 +13,34 @@ import android.graphics.Paint;
 public class DrawStart {
     private int dispWidth,dispHeight;
     SharedPreferences prefs;
+    Paint musicPaint,greenPaint,redPaint,circlePaint;
 
     public DrawStart(Context context,int dispWidth,int dispHeight){
         this.dispWidth = dispWidth;
         this.dispHeight = dispHeight;
         prefs = context.getSharedPreferences("preferences",Context.MODE_PRIVATE);
+        musicPaint = new Paint();
+        musicPaint.setColor(Color.BLACK);
+        musicPaint.setAntiAlias(true);
+        musicPaint.setTextSize(dispWidth*0.1f);
+
+        circlePaint = new Paint();
+        circlePaint.setColor(Color.BLACK);
+        circlePaint.setAntiAlias(true);
+        circlePaint.setStyle(Paint.Style.STROKE);
+        circlePaint.setStrokeWidth(dispWidth*0.01f);
+
+        greenPaint = new Paint();
+        greenPaint.setColor(Color.GREEN);
+        greenPaint.setAntiAlias(true);
+        greenPaint.setStyle(Paint.Style.FILL);
+        greenPaint.setStrokeWidth(dispWidth*0.01f);
+
+        redPaint = new Paint();
+        redPaint.setColor(Color.RED);
+        redPaint.setAntiAlias(true);
+        redPaint.setStyle(Paint.Style.FILL);
+        redPaint.setStrokeWidth(dispWidth*0.01f);
     }
 
     public void drawStart(Canvas canvas){
@@ -45,9 +68,34 @@ public class DrawStart {
                 (dispWidth/2) - (bestPaint.measureText("最高得点:" + String.valueOf(prefs.getInt("best_score",0)))/2),
                 dispHeight - (bestPaint.getFontMetrics().bottom - bestPaint.getFontMetrics().top),
                 bestPaint);
+
+
+        if(prefs.getBoolean("music",true)) {
+            canvas.drawCircle(musicPaint.measureText("音") / 2,
+                    (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top) / 1.5f,
+                    dispWidth * 0.1f, greenPaint);
+        }
+        else{
+            canvas.drawCircle(musicPaint.measureText("音") / 2,
+                    (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top) / 1.5f,
+                    dispWidth * 0.1f, redPaint);
+        }
+
+        canvas.drawCircle(musicPaint.measureText("音") / 2,
+                (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top) / 1.5f,
+                dispWidth * 0.1f, circlePaint);
+
+        canvas.drawText("音",0,
+                musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top,
+                musicPaint);
     }
 
-    public void touchStart(){
-
+    public boolean touchMusic(float x,float y){
+        if(x > 0 && x < (musicPaint.measureText("音")/2) + (dispWidth*0.1f)){
+            if(y > 0 && y < (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top)/1.5f + (dispWidth*0.1f)){
+                return true;
+            }
+        }
+        return false;
     }
 }

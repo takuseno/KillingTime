@@ -2,6 +2,7 @@ package jp.gr.java_conf.androtaku.killingtime;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,6 +10,8 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 
 import java.io.IOException;
@@ -17,10 +20,12 @@ import java.io.IOException;
 public class MainActivity extends Activity {
 
     KillingTimeView killingTimeView = null;
-    LinearLayout linearLayout;
-    MediaPlayer bgm;
+    LinearLayout linearLayout,adLayout;
+    AdView adView;
 
     boolean initialized = false;
+
+    SharedPreferences prefs = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,30 +37,44 @@ public class MainActivity extends Activity {
         linearLayout = (LinearLayout)findViewById(R.id.linearlayout);
         killingTimeView = new KillingTimeView(this);
         linearLayout.addView(killingTimeView);
-        bgm = MediaPlayer.create(this, R.raw.bgm);
-        bgm.setLooping(true);
 
+        adLayout = (LinearLayout)findViewById(R.id.adlayout);
+
+        adView = (AdView)findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice("CEDA3A470BE0172E6E4DB4E139205B82")
+                .addTestDevice("857A812B83EDE2C982622E53AD099F5B")
+                .build();
+        adView.loadAd(adRequest);
     }
 
     @Override
     public void onPause(){
         super.onPause();
         killingTimeView.stopThread();
-        bgm.stop();
-        try{
-            bgm.prepare();
-        }catch(IOException e){
-            e.printStackTrace();
-        }
+        killingTimeView.stopMusic();
         initialized = true;
+        adView.pause();
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        bgm.start();
-        if(killingTimeView != null && initialized) {
-            //killingTimeView.startThread();
+        if(prefs == null){
+            prefs = getSharedPreferences("preferences",MODE_PRIVATE);
         }
+        if(prefs.getBoolean("music",true)) {
+            killingTimeView.startMusic();
+        }
+        if(killingTimeView != null && initialized) {
+            // killingTimeView.startThread();
+        }
+        adView.resume();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        adView.destroy();
     }
 }
