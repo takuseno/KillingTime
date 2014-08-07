@@ -15,6 +15,10 @@ import android.view.SurfaceView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.internal.GamesClientImpl;
+import com.google.example.games.basegameutils.BaseGameActivity;
+import com.google.example.games.basegameutils.GameHelper;
 
 import java.io.IOException;
 import java.util.Random;
@@ -42,6 +46,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     DrawPrepare drawPrepare;
     InterstitialAd interstitial;
     AdRequest adRequest;
+    BaseGameActivity baseGameActivity;
 
     SharedPreferences prefs;
     SharedPreferences.Editor editor;
@@ -64,6 +69,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
         prefs = context.getSharedPreferences("preferences",Context.MODE_PRIVATE);
         editor = prefs.edit();
 
+        baseGameActivity = (BaseGameActivity)context;
     }
 
     @Override
@@ -162,6 +168,9 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                                 editor.commit();
                             }
                         }
+                        else if(drawStart.touchRank(event.getX(),event.getY())){
+                            drawStart.clickType = drawStart.LB_CLICKED;
+                        }
                         else {
                             drawPlaying = new DrawPlaying(context, dispWidth, dispHeight);
                             drawPrepare = new DrawPrepare(dispWidth, dispHeight);
@@ -196,6 +205,14 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
 
             case MotionEvent.ACTION_UP:
                 switch (viewMode){
+                    case START:
+                        if(drawStart.touchRank(event.getX(),event.getY())){
+                            if(baseGameActivity.getGameHelper().isSignedIn()){
+                                baseGameActivity.startActivityForResult(Games.Leaderboards.getAllLeaderboardsIntent(baseGameActivity.getGameHelper().getApiClient()),5001);
+                            }
+                        }
+                        break;
+
                     case RESULT:
                         if(drawResult.isBack(event.getX(),event.getY())){
                             drawStart = new DrawStart(context,dispWidth,dispHeight);
@@ -217,6 +234,12 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
 
             case MotionEvent.ACTION_MOVE:
                 switch (viewMode){
+                    case START:
+                        if(!drawStart.touchRank(event.getX(),event.getY())){
+                            drawStart.clickType = drawStart.NONE_CLICK;
+                        }
+                        break;
+
                     case RESULT:
                         if(!drawResult.isBack(event.getX(),event.getY())
                                 && !drawResult.isRetry(event.getX(),event.getY())){
@@ -227,6 +250,8 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                     default:
                 }
                 break;
+
+
 
             default:
         }

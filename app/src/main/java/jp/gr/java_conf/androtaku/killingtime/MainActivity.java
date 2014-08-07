@@ -1,18 +1,22 @@
 package jp.gr.java_conf.androtaku.killingtime;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.games.Games;
+import com.google.example.games.basegameutils.BaseGameActivity;
+
 
 import com.google.analytics.tracking.android.EasyTracker;
 
-public class MainActivity extends Activity {
+public class MainActivity extends BaseGameActivity {
 
     KillingTimeView killingTimeView = null;
     LinearLayout linearLayout,adLayout;
@@ -29,6 +33,8 @@ public class MainActivity extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.hide();
 
+        setRequestedClients(BaseGameActivity.CLIENT_ALL);
+
         setContentView(R.layout.activity_main);
         linearLayout = (LinearLayout)findViewById(R.id.linearlayout);
         killingTimeView = new KillingTimeView(this);
@@ -42,11 +48,18 @@ public class MainActivity extends Activity {
                 .addTestDevice("857A812B83EDE2C982622E53AD099F5B")
                 .build();
         adView.loadAd(adRequest);
+
+        beginUserInitiatedSignIn();
     }
 
     public void showGuide(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setPositiveButton("OK",null)
+                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        beginUserInitiatedSignIn();
+                    }
+                })
                 .setTitle("遊び方")
                 .setMessage("”暇”と”忙”がランダムに飛び出てきます。”忙”を押すか、”暇”を押しそこねるとミスになります。ミスを3回するとゲームオーバーです。さあ暇を潰しましょう！");
         builder.create().show();
@@ -79,7 +92,7 @@ public class MainActivity extends Activity {
             killingTimeView.startMusic();
         }
         if(killingTimeView != null && initialized) {
-            // killingTimeView.startThread();
+            killingTimeView.startThread();
         }
         adView.resume();
     }
@@ -88,5 +101,16 @@ public class MainActivity extends Activity {
     public void onDestroy(){
         super.onDestroy();
         adView.destroy();
+    }
+
+    @Override
+    public void onSignInSucceeded(){
+        Log.i("signIn", "success");
+        Games.Achievements.unlock(getGameHelper().getApiClient(),getString(R.string.first_achievement));
+    }
+
+    @Override
+    public void onSignInFailed(){
+        Log.i("signIn","failed");
     }
 }

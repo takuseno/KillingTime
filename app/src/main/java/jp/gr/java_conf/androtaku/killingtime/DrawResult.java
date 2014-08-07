@@ -8,6 +8,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
+
+import com.google.android.gms.games.Game;
+import com.google.android.gms.games.Games;
+import com.google.example.games.basegameutils.BaseGameActivity;
 
 /**
  * Created by takuma on 2014/08/02.
@@ -29,10 +34,28 @@ public class DrawResult {
         SharedPreferences prefs = context.getSharedPreferences("preferences",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         this.score = score;
+
+        BaseGameActivity baseGameActivity = (BaseGameActivity)context;
         if(score > prefs.getInt("best_score",0)){
             editor.putInt("best_score",score);
             editor.commit();
             isBestScore = true;
+            if(baseGameActivity.getGameHelper().isSignedIn()){
+                Log.i("score","sent");
+                Games.Leaderboards.submitScore(baseGameActivity.getGameHelper().getApiClient(),context.getString(R.string.lb_id),score);
+                if(score >= 100){
+                    Games.Achievements.unlock(baseGameActivity.getGameHelper().getApiClient(),context.getString(R.string.second_achievement));
+                }
+                if(score >= 500){
+                    Games.Achievements.unlock(baseGameActivity.getGameHelper().getApiClient(),context.getString(R.string.third_achievement));
+                }
+                if(score >= 1000){
+                    Games.Achievements.unlock(baseGameActivity.getGameHelper().getApiClient(),context.getString(R.string.forth_achievement));
+                }
+                if(score >= 2000){
+                    Games.Achievements.unlock(baseGameActivity.getGameHelper().getApiClient(),context.getString(R.string.final_achievement));
+                }
+            }
         }
 
         wordPaint = new Paint();
@@ -51,6 +74,8 @@ public class DrawResult {
         strokePaint.setAntiAlias(true);
         strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setStrokeWidth(dispWidth*0.01f);
+
+
     }
 
     public void drawResult(Canvas canvas){

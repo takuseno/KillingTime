@@ -14,6 +14,9 @@ public class DrawStart {
     private int dispWidth,dispHeight;
     SharedPreferences prefs;
     Paint musicPaint,greenPaint,redPaint,circlePaint;
+    public final int NONE_CLICK = 0;
+    public final int LB_CLICKED = 1;
+    public int clickType = NONE_CLICK;
 
     public DrawStart(Context context,int dispWidth,int dispHeight){
         this.dispWidth = dispWidth;
@@ -88,10 +91,33 @@ public class DrawStart {
         canvas.drawText("音",0,
                 musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top,
                 musicPaint);
+
+        if(clickType == LB_CLICKED){
+            canvas.drawCircle(dispWidth - musicPaint.measureText("格") / 2,
+                    (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top) / 1.5f,
+                    dispWidth * 0.1f, greenPaint);
+        }
+
+        canvas.drawCircle(dispWidth - musicPaint.measureText("格") / 2,
+                (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top) / 1.5f,
+                dispWidth * 0.1f, circlePaint);
+
+        canvas.drawText("格",dispWidth - musicPaint.measureText("格"),
+                musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top,
+                musicPaint);
     }
 
     public boolean touchMusic(float x,float y){
         if(x > 0 && x < (musicPaint.measureText("音")/2) + (dispWidth*0.1f)){
+            if(y > 0 && y < (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top)/1.5f + (dispWidth*0.1f)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean touchRank(float x,float y){
+        if(x < dispWidth && x > dispWidth - (musicPaint.measureText("順")/2) - (dispWidth*0.1f)){
             if(y > 0 && y < (musicPaint.getFontMetrics().bottom - musicPaint.getFontMetrics().top)/1.5f + (dispWidth*0.1f)){
                 return true;
             }
