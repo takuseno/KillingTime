@@ -27,6 +27,27 @@
 
         <activity android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+        <meta-data android:name="gamefeat_site_id" android:value="7582" />
+        <activity
+            android:name="jp.basicinc.gamefeat.android.sdk.view.GameFeatAppActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="GameFeat" >
+        </activity>
+        <activity
+            android:name="jp.basicinc.gamefeat.android.sdk.view.GameFeatAppChildActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="GameFeat"
+            android:screenOrientation="sensor" >
+        </activity>
+        <receiver
+            android:name="jp.basicinc.gamefeat.android.sdk.receiver.GameFeatBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

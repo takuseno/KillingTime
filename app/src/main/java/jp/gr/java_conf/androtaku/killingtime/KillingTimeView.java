@@ -30,6 +30,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
 
     SurfaceHolder holder = null;
     private Thread thread = null;
+    public boolean initialized = false;
     private int dispWidth,dispHeight;
 
     private static final int START = 0;
@@ -82,7 +83,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
         drawStart = new DrawStart(context,width,height);
         dispWidth = width;
         dispHeight = height;
-
+        initialized = true;
         if(thread == null) {
             thread = new Thread(this);
             thread.start();
@@ -92,6 +93,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
     @Override
     public void surfaceDestroyed(SurfaceHolder holder){
         thread = null;
+        initialized = false;
     }
 
     @Override
@@ -209,6 +211,7 @@ public class KillingTimeView extends SurfaceView implements SurfaceHolder.Callba
                         if(drawStart.touchRank(event.getX(),event.getY())){
                             if(baseGameActivity.getGameHelper().isSignedIn()){
                                 baseGameActivity.startActivityForResult(Games.Leaderboards.getAllLeaderboardsIntent(baseGameActivity.getGameHelper().getApiClient()),5001);
+                                drawStart.clickType = drawStart.NONE_CLICK;
                             }
                         }
                         break;

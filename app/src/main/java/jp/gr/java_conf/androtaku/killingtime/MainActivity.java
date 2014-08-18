@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.ads.AdRequest;
@@ -16,16 +18,21 @@ import com.google.example.games.basegameutils.BaseGameActivity;
 
 import com.google.analytics.tracking.android.EasyTracker;
 
+import jp.basicinc.gamefeat.android.sdk.controller.GameFeatAppController;
+import jp.basicinc.gamefeat.android.sdk.view.GameFeatBannerView;
+import jp.basicinc.gamefeat.android.sdk.view.GameFeatWallButtonView;
+
 public class MainActivity extends BaseGameActivity {
 
     KillingTimeView killingTimeView = null;
-    LinearLayout linearLayout,adLayout;
-    AdView adView;
+    LinearLayout linearLayout;
 
     boolean initialized = false;
 
     SharedPreferences prefs = null;
     SharedPreferences.Editor editor;
+
+    GameFeatAppController gfAppController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,23 +40,22 @@ public class MainActivity extends BaseGameActivity {
         ActionBar actionBar = getActionBar();
         actionBar.hide();
 
-        setRequestedClients(BaseGameActivity.CLIENT_ALL);
-
         setContentView(R.layout.activity_main);
         linearLayout = (LinearLayout)findViewById(R.id.linearlayout);
         killingTimeView = new KillingTimeView(this);
         linearLayout.addView(killingTimeView);
 
-        adLayout = (LinearLayout)findViewById(R.id.adlayout);
+        gfAppController = new GameFeatAppController();
 
-        adView = (AdView)findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder()
-                .addTestDevice("CEDA3A470BE0172E6E4DB4E139205B82")
-                .addTestDevice("857A812B83EDE2C982622E53AD099F5B")
-                .build();
-        adView.loadAd(adRequest);
+        GameFeatBannerView bannerView = (GameFeatBannerView)findViewById(R.id.adView);
+        bannerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gfAppController.show(MainActivity.this);
+            }
+        });
 
-        beginUserInitiatedSignIn();
+
     }
 
     public void showGuide(){
@@ -57,14 +63,14 @@ public class MainActivity extends BaseGameActivity {
                 .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        beginUserInitiatedSignIn();
+                        editor.putBoolean("guide",false);
+                        editor.commit();
                     }
                 })
                 .setTitle("遊び方")
                 .setMessage("”暇”と”忙”がランダムに飛び出てきます。”忙”を押すか、”暇”を押しそこねるとミスになります。ミスを3回するとゲームオーバーです。さあ暇を潰しましょう！");
         builder.create().show();
-        editor.putBoolean("guide",false);
-        editor.commit();
+
     }
 
     @Override
@@ -74,7 +80,6 @@ public class MainActivity extends BaseGameActivity {
         killingTimeView.stopThread();
         killingTimeView.stopMusic();
         initialized = true;
-        adView.pause();
     }
 
     @Override
@@ -87,20 +92,27 @@ public class MainActivity extends BaseGameActivity {
             if(prefs.getBoolean("guide",true)){
                 showGuide();
             }
+            if(prefs.getBoolean("SignIn",false)){
+                beginUserInitiatedSignIn();
+            }
         }
         if(prefs.getBoolean("music",true)) {
             killingTimeView.startMusic();
         }
-        if(killingTimeView != null && initialized) {
+        if(killingTimeView != null && initialized && killingTimeView.initialized) {
             killingTimeView.startThread();
         }
-        adView.resume();
     }
 
     @Override
     public void onDestroy(){
         super.onDestroy();
-        adView.destroy();
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        gfAppController.activateGF(MainActivity.this, false, false, false);
     }
 
     @Override

@@ -8,8 +8,8 @@ android {
         applicationId "jp.gr.java_conf.androtaku.killingtime"
         minSdkVersion 14
         targetSdkVersion 20
-        versionCode 3
-        versionName "1.0"
+        versionCode 6
+        versionName "1.2"
     }
     buildTypes {
         release {
@@ -24,4 +24,5 @@ dependencies {
     compile 'com.google.android.gms:play-services:+'
     compile files('libs/libGoogleAnalyticsServices.jar')
     compile project(':BaseGameUtils')
+    compile files('libs/GameFeatSDK.jar')
 }
